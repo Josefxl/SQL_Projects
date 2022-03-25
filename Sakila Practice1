@@ -1,0 +1,79 @@
+# SQL_practice
+Query practice using the Sakila database
+
+-- Which actors have the first name ‘Scarlett’
+SELECT actor_id, first_name, last_name
+FROM actor
+WHERE first_name = 'Scarlett'
+
+-- Which actors have the last name ‘Johansson’
+SELECT actor_id, first_name, last_name
+FROM actor
+WHERE last_name = 'Johansson'
+
+-- How many distinct actors last names are there?
+SELECT COUNT(DISTINCT(last_name)) AS No_of_distinct_last_names
+
+-- Which last names are not repeated? 
+SELECT last_name, COUNT(last_name) AS People
+FROM actor
+GROUP BY last_name
+HAVING People = 1
+
+-- Which last names appear more than once? 
+SELECT last_name, COUNT(last_name) AS People
+FROM actor
+GROUP BY last_name
+HAVING People > 1
+ORDER BY People DESC
+
+-- Which actors have appeared in the most films?
+SELECT first_name, last_name, COUNT(film_id) AS Number_of_films 
+FROM actor AS a
+INNER JOIN film_actor AS b ON a.actor_id = b.actor_id
+GROUP BY first_name, last_name
+ORDER BY Number_of_films DESC
+
+-- Is ‘Academy Dinosaur’ available for rent from Store 1?
+SELECT inventory_id, title, store_id
+from film a 
+INNER JOIN rental b ON a.film_id = b.rental_id
+INNER JOIN store c ON b.rental_id = c.store_id
+WHERE title = 'Academy Dinosaur' -- Yes Academy Dinosaur is available for rent from store 1
+
+
+-- Insert a record to represent Mary Smith renting ‘Academy Dinosaur’ from Mike Hillyer at Store 1 today*******
+/* First we need to know the customer_id and staff_id for Mary Smith and Mike Hillyer Respectively
+as well as the rental id for 'Academy Dinosaur' */
+SELECT first_name, last_name, customer_id
+FROM customer 
+WHERE first_name = 'Mary' AND last_name = 'Smith' -- customer_id is 1
+
+SELECT first_name, last_name, staff_id
+from staff
+WHERE first_name = 'Mike' AND last_name = 'Hillyer' -- staff_id is 1
+
+SELECT title, film_id 
+FROM film
+WHERE title = 'Academy Dinosaur' -- film id is 1
+
+-- We can now proceed to add new record
+
+insert into rental (rental_date, inventory_id, customer_id, staff_id)
+values (NOW(), 1, 1, 1);
+
+-- When is ‘Academy Dinosaur’ due?
+SELECT title, return_date
+FROM film AS a
+INNER JOIN rental as b ON a.film_id = b.rental_id
+WHERE title = 'Academy Dinosaur' -- Due on 2005-05-26 22:04:30
+
+-- What is the average running time of all the films in the sakila DB?
+SELECT ROUND(AVG(length),0) AS Average_length_of_films
+FROM film
+
+-- What is the average running time of films by category?
+SELECT category_id AS Category, ROUND(AVG(length),0) AS Average_length_of_films 
+FROM film a
+INNER JOIN film_category b ON a.film_id = b.film_id
+GROUP BY category
